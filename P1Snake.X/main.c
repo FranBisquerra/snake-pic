@@ -62,8 +62,7 @@ int timesSpecialFood = 0;
 
 char players[100] = {0};
 /******************************************************************************/
-/* Procedures declaration                                                     */
-
+/* Interrups                                                                  */
 /******************************************************************************/
 
 void _ISR _C1Interrupt(void) {
@@ -73,7 +72,7 @@ void _ISR _C1Interrupt(void) {
         SID = C1RX0SIDbits.SID;
 
         if (SID == 1 && (C1RX0B1 & 0x00FF) == 'S' && startGame == 0) {
-            initGame();
+            startGame = 1;
         } else if (SID == 2) {
             direction = C1RX0B1 & 0x00FF;
         } else if (SID == 3) {
@@ -92,35 +91,45 @@ void _ISR _C1Interrupt(void) {
 }
 
 void _ISR _T1Interrupt(void) { //Special food
+    toggleLED(1);
+
     TIMER1ClearInt();
 
     timesSpecialFood++;
 }
 
 void _ISR _T2Interrupt(void) { //Normal food
+    toggleLED(2);
+
     TIMER2ClearInt();
 
     timesNormalFood++;
 }
 
+
+/******************************************************************************/
+/* Funtions                                                                   */
+/******************************************************************************/
 void initGame() {
 
-    // Init variables
-    startGame = 1;
-    crash = 0;
-    points = 0;
-    timesNormalFood = 0;
-    timesSpecialFood = 0;
+    if (startGame == 1) {
 
-    // Clear terminal
-    Delay5ms();
-    TermErase();
+        // Init variables
+        crash = 0;
+        points = 0;
+        timesNormalFood = 0;
+        timesSpecialFood = 0;
 
-    initSnake();
-    printBorder();
-    //Activate timers
-    TIMER1Start();
-    TIMER2Start();
+        // Clear terminal
+        TermErase();
+
+        initSnake();
+        printBorder();
+
+        //Activate timers
+        TIMER1Start();
+        TIMER2Start();
+    }
 }
 
 void initSnake() {
@@ -128,13 +137,14 @@ void initSnake() {
     // Init variables
     snakeSize = 3;
     direction = 'B';
+    lastDirection = 'B';
 
     // Init matrix snake
     memset(snake, 0, sizeof (snake[0][0]) * 2 * 100); // clear array
 
     // Set first positions
-    snake[0][0] = rand() % (screenWidth - 1);
-    snake[1][0] = rand() % (screenHeight - 1);
+    snake[0][0] = rand() % (screenWidth - 1) + 2;
+    snake[1][0] = rand() % (screenHeight - 10) + 2;
 }
 
 void controlSnake() {
@@ -189,6 +199,12 @@ void crashed() {
     playNote(escalaNotas[2], 4, 300);
     playNote(escalaNotas[1], 4, 350);
 
+    timesNormalFood = 0;
+    isNormalFood = 0;
+
+    timesSpecialFood = 0;
+    isSpecialFood = 0;
+
     TIMER1Reset();
     TIMER2Reset();
 
@@ -210,7 +226,7 @@ void crashed() {
     TermPrintDefault();
 
     TermMove(screenHeight / 2 - 3, screenWidth / 2 - 15);
-    UARTSendString("Enter your name and press space:");
+    UARTSendString("Enter your name and press enter:");
 }
 
 int checkIfSnakeEatsItself() {
@@ -273,17 +289,13 @@ void refreshSnake() {
 void controlVelocity() {
     int j;
     switch (velocity) {
-        case '1': for (j = 0; j <= 80; j++) Delay5ms();
-            onLED(1);
+        case '1': for (j = 0; j <= 100; j++) Delay5ms();
             break;
-        case '2': for (j = 0; j <= 50; j++) Delay5ms();
-            onLED(2);
+        case '2': for (j = 0; j <= 70; j++) Delay5ms();
             break;
         case '3': for (j = 0; j <= 40; j++) Delay5ms();
-            onLED(4);
             break;
-        case '4': for (j = 0; j <= 20; j++) Delay5ms();
-            onLED(4);
+        case '4': for (j = 0; j <= 15; j++) Delay5ms();
             break;
     }
 
@@ -319,7 +331,7 @@ void printStart() {
     TermPrintCyan();
     UARTSendString("Pulsa la tecla 4 para empezar!");
     TermPrintDefault();
-    Delay5ms();
+    Delay15ms();
 }
 
 void printSnake() {
@@ -330,7 +342,7 @@ void printSnake() {
 }
 
 void printSpecialFood() {
-    if (timesSpecialFood == 1) {
+    if (isSpecialFood == 0 && startGame == 1) {
         //Initialize position food
         specialFoodPosition[0][0] = rand() % (screenWidth - 5) + 2;
         specialFoodPosition[1][0] = rand() % (screenHeight - 5) + 2;
@@ -341,7 +353,6 @@ void printSpecialFood() {
         UARTSendString("S");
 
         isSpecialFood = 1;
-        timesSpecialFood++;
 
     } else if (timesSpecialFood == 14) {
         //warm that time of food is short
@@ -350,18 +361,19 @@ void printSpecialFood() {
         UARTSendString("S");
         TermPrintDefault();
 
-        timesSpecialFood++;
     } else if (timesSpecialFood > 20) {
         //Delete food
-        timesSpecialFood = 0;
         TermMove(specialFoodPosition[1][0], specialFoodPosition[0][0]);
         UARTSendString(" ");
+
         isSpecialFood = 0;
+        timesSpecialFood = 0;
+
     }
 }
 
 void printNormalFood() {
-    if (timesNormalFood == 1) {
+    if (isNormalFood == 0 && startGame == 1) {
         //Initialize position food
         normalFoodPosition[0][0] = rand() % (screenWidth - 5) + 2;
         normalFoodPosition[1][0] = rand() % (screenHeight - 5) + 2;
@@ -372,8 +384,6 @@ void printNormalFood() {
         UARTSendString("B");
 
         isNormalFood = 1;
-        timesNormalFood++;
-
     } else if (timesNormalFood == 22) {
         //warm that time of food is short
         TermMove(normalFoodPosition[1][0], normalFoodPosition[0][0]);
@@ -383,10 +393,12 @@ void printNormalFood() {
 
     } else if (timesNormalFood > 30) {
         //Delete food
-        timesNormalFood = 0;
         TermMove(normalFoodPosition[1][0], normalFoodPosition[0][0]);
         UARTSendString(" ");
+
         isNormalFood = 0;
+        timesNormalFood = 0;
+
     }
 }
 
@@ -404,20 +416,33 @@ void printCounter() {
 void printPlayers() {
 
     if (crash == 1) {
-        unsigned int buffer[15] = {0};
-        char auxPlayers[20] = {0};
+        unsigned int buffer[50] = {0};
+        char auxPlayers[50] = {0};
         int i = 0;
-
 
         unsigned int word = UARTRecv();
 
+        //13 = enter
         while ((char) word != 13) {
-            strcat(buffer, &word);
 
-            TermMove(screenHeight / 2 - 2, 32 + i);
-            UARTSendString(&word);
+            //127 = delete
+            if ((char) word == 127) {
+                if (i > 0) {
+                    strcat(buffer, &word);
 
-            i++;
+                    TermMove(screenHeight / 2 - 2, 32);
+                    UARTSendString(buffer);
+
+                    i--;
+                }
+            } else {
+                strcat(buffer, &word);
+
+                TermMove(screenHeight / 2 - 2, 32);
+                UARTSendString(buffer);
+                i++;
+
+            }
             word = UARTRecv();
         }
 
@@ -440,7 +465,6 @@ void printPlayers() {
 
 /******************************************************************************/
 /* Main                                                                       */
-
 /******************************************************************************/
 
 int main(void) {
@@ -469,6 +493,7 @@ int main(void) {
 
         while (startGame == 0) {
             printStart();
+            initGame();
         }
 
         controlVelocity();
