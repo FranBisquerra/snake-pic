@@ -1,6 +1,6 @@
-/* 
+  /*
  * File:   main.c
- * Author: Maria
+ * Author: Calzada GOnzalez, Maria - Bisquerra Castell, Francisco Bernardo
  *
  * Created on June 24, 2016, 5:07 PM
  */
