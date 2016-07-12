@@ -1,6 +1,6 @@
-/*
+  /*
  * File:   main.c
- * Author: Calzada GOnzalez, Maria - Bisquerra Castell, Francisco Bernardo
+ * Author: Calzada Gonzalez, Maria - Bisquerra Castell, Francisco Bernardo
  *
  * Created on June 24, 2016, 5:06 PM
  */
@@ -33,10 +33,9 @@ char direction = 'B';
 /* Procedures declaration                                                     */
 /******************************************************************************/
 void transmit(char c, int sid);
-
+void printValues();
 /******************************************************************************/
 /* Main                                                                       */
-
 /******************************************************************************/
 
 void _ISR _T1Interrupt(void) {

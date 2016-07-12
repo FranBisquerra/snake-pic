@@ -1,6 +1,6 @@
   /*
  * File:   main.c
- * Author: Calzada GOnzalez, Maria - Bisquerra Castell, Francisco Bernardo
+ * Author: Calzada Gonzalez, Maria - Bisquerra Castell, Francisco Bernardo
  *
  * Created on June 24, 2016, 5:07 PM
  */
@@ -17,7 +17,6 @@
 #include "CANlib.h"
 #include "BUZZERlib.h"
 #include "delay.h"
-#include "libTIMER.h"
 #include "TIMERlib.h"
 #include <time.h>
 

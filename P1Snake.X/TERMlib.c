@@ -19,8 +19,6 @@ void TermNewLine() {
     while (BusyUART());
 }
 
-//Cambiar
-
 void TermMove(char row, char col) {
     char row1, row2;
     char col1, col2;
@@ -28,8 +26,10 @@ void TermMove(char row, char col) {
     if (row < 0) return;
     if (col < 0) return;
 
-    // Row
+    // Obteniene el primer valor de la fila
     row1 = (row / 10) + 48;
+    
+    // Obteniene el segundp valor de la fila
     row2 = (row % 10) + 48;
 
     // Col
